@@ -13,6 +13,8 @@ import os
 import logging
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from utils import load_config
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -30,7 +32,10 @@ app.add_middleware(
 )
 
 # Configuration
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+config = load_config('config.yaml')
+GEMINI_API_KEY = config["google_api_key"]
+print(GEMINI_API_KEY)
+print(lol)
 if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY environment variable is required")
 
