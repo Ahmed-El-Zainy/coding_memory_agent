@@ -14,9 +14,15 @@ import logging
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from utils import load_config
+import sys
+
+## define main paths
+Main_Path = os.path.dirname(os.path.abspath(__file__))
+Add_Path = os.path.dirname(Main_Path)
+sys.path.append(Add_Path)
 
 
-# Configure logging
+## add logger 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -32,10 +38,9 @@ app.add_middleware(
 )
 
 # Configuration
-config = load_config('config.yaml')
+config = load_config('src/config.yaml')
 GEMINI_API_KEY = config["google_api_key"]
-print(GEMINI_API_KEY)
-print(lol)
+
 if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY environment variable is required")
 
