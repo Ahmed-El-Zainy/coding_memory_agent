@@ -10,3 +10,33 @@ python-multipart==0.0.6
 torch==2.1.0
 transformers==4.35.2
 langchain-google-genai>=0.0.5
+langgraph>=0.0.20
+
+
+# FastAPI and web server
+# fastapi==0.104.1
+# uvicorn[standard]==0.24.0
+# python-multipart==0.0.6
+
+# # Pydantic for data validation
+# pydantic==2.5.0
+
+# # Google Generative AI (Gemini)
+# google-generativeai==0.3.2
+
+# # Sentence Transformers for embeddings
+# sentence-transformers==2.2.2
+# torch>=1.9.0
+# transformers>=4.21.0
+
+# # Vector database
+# chromadb==0.4.22
+
+# # Utilities
+# numpy>=1.21.0
+# pyyaml>=6.0
+# python-dotenv>=1.0.0
+
+# # Optional: For better performance
+# # accelerate>=0.21.0
+# # optimum>=1.12.0
