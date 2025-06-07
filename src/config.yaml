@@ -1,0 +1,33 @@
+google_api_key: AIzaSyDi6MyC0kNc4l6L3D5_2O2ktmGp5SJwCio
+huggingface_api_key: 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
+
+
+
+# Embedding Model Configuration
+embedding:
+  model_name: "all-MiniLM-L6-v2"  # Default embedding model
+  fallback_models:
+    - "paraphrase-MiniLM-L6-v2"
+    - "all-mpnet-base-v2"
+
+# ChromaDB Configuration
+chromadb:
+  persist_directory: "./chroma_db"
+  collection_name: "chat_memories"
+
+# API Configuration
+api:
+  host: "0.0.0.0"
+  port: 8000
+  cors_origins:
+    - "*"  # In production, specify your frontend domain
+
+# Memory Configuration
+memory:
+  max_memories_per_query: 3
+  memory_relevance_threshold: 0.7
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

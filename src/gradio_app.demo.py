@@ -4,9 +4,13 @@ import json
 from datetime import datetime
 import uuid
 import os
+import time
 
 # Configuration
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+
+# Backend connection status
+backend_status = {"connected": False, "last_check": 0}
 
 # Global state management
 class ChatState:
@@ -65,23 +69,9 @@ def check_backend_health():
     except:
         return False, None
 
-def format_chat_message(role, message, metadata=None):
-    """Format chat message with metadata"""
-    formatted_msg = f"**{role}:** {message}"
-    
-    if metadata and role == "Assistant":
-        if metadata.get('memories_used'):
-            formatted_msg += f"\n\n🧠 *Used {len(metadata['memories_used'])} memories | Decision: {metadata.get('memory_decision', 'N/A')}*"
-        
-        if metadata.get('model_info'):
-            model_info = metadata['model_info']
-            formatted_msg += f"\n🤖 *{model_info.get('llm_model', 'Unknown')} + {model_info.get('embedding_model', 'Unknown')}*"
-    
-    return formatted_msg
-
 def chat_function(message, history):
     """Main chat function"""
-    if not message.strip():
+    if not message or not message.strip():
         return history, ""
     
     # Send message to backend
@@ -94,18 +84,13 @@ def chat_function(message, history):
     
     # Format assistant response with metadata
     assistant_response = response_data.get('response', 'No response')
-    metadata = {
-        'memories_used': response_data.get('memories_used', []),
-        'memory_decision': response_data.get('memory_retrieval_decision', ''),
-        'model_info': response_data.get('model_info', {})
-    }
     
     # Add memory and model info to response if available
-    if metadata['memories_used']:
-        assistant_response += f"\n\n🧠 *Used {len(metadata['memories_used'])} memories | Decision: {metadata['memory_decision']}*"
+    if response_data.get('memories_used'):
+        assistant_response += f"\n\n🧠 *Used {len(response_data['memories_used'])} memories | Decision: {response_data.get('memory_retrieval_decision', 'N/A')}*"
     
-    if metadata['model_info']:
-        model_info = metadata['model_info']
+    if response_data.get('model_info'):
+        model_info = response_data['model_info']
         assistant_response += f"\n🤖 *{model_info.get('llm_model', 'Unknown')} + {model_info.get('embedding_model', 'Unknown')}*"
     
     # Update conversation count
@@ -162,15 +147,19 @@ def get_session_info():
     
     if is_healthy and health_data and 'models' in health_data:
         info += f"**Model Info:**\n"
-        info += f"```json\n{json.dumps(health_data['models'], indent=2)}\n```"
+        models_info = health_data['models']
+        for key, value in models_info.items():
+            info += f"- **{key}:** {value}\n"
     elif not is_healthy:
         info += "⚠️ *Make sure the backend server is running!*"
     
     return info
 
-def example_chat(example_text, history):
+def handle_example(example_text):
     """Handle example button clicks"""
-    return chat_function(example_text, history)
+    def example_fn(history):
+        return chat_function(example_text, history)
+    return example_fn
 
 # Custom CSS for better styling
 custom_css = """
@@ -266,15 +255,24 @@ with gr.Blocks(css=custom_css, title="AI Chatbot with Memory", theme=gr.themes.S
     def clear_chat():
         return [], ""
     
+    def handle_submit(message, history):
+        return chat_function(message, history)
+    
     # Chat functionality
-    msg.submit(chat_function, [msg, chatbot], [chatbot, msg])
-    send_btn.click(chat_function, [msg, chatbot], [chatbot, msg])
+    msg.submit(handle_submit, [msg, chatbot], [chatbot, msg])
+    send_btn.click(handle_submit, [msg, chatbot], [chatbot, msg])
     clear_btn.click(clear_chat, outputs=[chatbot, msg])
     
-    # Example buttons
-    example1_btn.click(lambda h: chat_function("Hello, I'm Alex and I love pizza", h), [chatbot], [chatbot, msg])
-    example2_btn.click(lambda h: chat_function("What's my favorite food?", h), [chatbot], [chatbot, msg])
-    example3_btn.click(lambda h: chat_function("Can you remember what we talked about before?", h), [chatbot], [chatbot, msg])
+    # Example buttons - Fixed to properly handle the chatbot state
+    def create_example_handler(example_text):
+        def handler(history):
+            result_history, _ = chat_function(example_text, history)
+            return result_history, ""
+        return handler
+    
+    example1_btn.click(create_example_handler("Hello, I'm Alex and I love pizza"), [chatbot], [chatbot, msg])
+    example2_btn.click(create_example_handler("What's my favorite food?"), [chatbot], [chatbot, msg])
+    example3_btn.click(create_example_handler("Can you remember what we talked about before?"), [chatbot], [chatbot, msg])
     
     # Memory management
     view_memories_btn.click(view_memories, outputs=[memories_display])

@@ -61,6 +61,12 @@ if 'chat_history' not in st.session_state:
 if 'conversation_count' not in st.session_state:
     st.session_state.conversation_count = 0
 
+if 'show_memories' not in st.session_state:
+    st.session_state.show_memories = False
+
+if 'confirm_clear' not in st.session_state:
+    st.session_state.confirm_clear = False
+
 # Helper functions
 def send_message(message: str, user_id: str):
     """Send message to backend API"""
@@ -105,12 +111,14 @@ def get_model_info():
     except requests.exceptions.RequestException as e:
         st.error(f"Error getting model info: {e}")
         return None
+
+def check_backend_health():
     """Check if backend is healthy"""
     try:
         response = requests.get(f"{BACKEND_URL}/health", timeout=5)
-        return response.status_code == 200
+        return response.status_code == 200, response.json() if response.status_code == 200 else None
     except:
-        return False
+        return False, None
 
 # Main app
 def main():
@@ -149,7 +157,7 @@ def main():
                 st.session_state.show_memories = True
         
         if st.button("🗑️ Clear My Memories", use_container_width=True, type="secondary"):
-            if st.session_state.get('confirm_clear', False):
+            if st.session_state.confirm_clear:
                 result = clear_user_memories(st.session_state.user_id)
                 if result:
                     st.success(f"Cleared {result.get('message', 'memories')}")
@@ -166,6 +174,8 @@ def main():
             st.session_state.user_id = str(uuid.uuid4())[:8]
             st.session_state.chat_history = []
             st.session_state.conversation_count = 0
+            st.session_state.show_memories = False
+            st.session_state.confirm_clear = False
             st.rerun()
     
     # Main chat interface
@@ -223,28 +233,18 @@ def main():
             with col_send:
                 send_button = st.form_submit_button("Send 📤", use_container_width=True)
         
+        # Handle form submission
         if send_button and user_input.strip():
-            with st.spinner("🤔 Thinking..."):
-                response_data = send_message(user_input.strip(), st.session_state.user_id)
-                
-                if response_data:
-                    # Add to chat history
-                    chat_entry = {
-                        'user_message': user_input.strip(),
-                        'assistant_response': response_data.get('response', 'No response'),
-                        'memories_used': response_data.get('memories_used', []),
-                        'memory_decision': response_data.get('memory_retrieval_decision', ''),
-                        'model_info': response_data.get('model_info', {}),
-                        'timestamp': datetime.now().isoformat()
-                    }
-                    
-                    st.session_state.chat_history.append(chat_entry)
-                    st.session_state.conversation_count += 1
-                    st.rerun()
+            process_message(user_input.strip())
+        
+        # Handle example inputs if they exist
+        if hasattr(st.session_state, 'example_input'):
+            process_message(st.session_state.example_input)
+            delattr(st.session_state, 'example_input')
     
     with col2:
         # Memory display
-        if st.session_state.get('show_memories', False):
+        if st.session_state.show_memories:
             st.subheader("🧠 Your Memories")
             
             memories_data = get_user_memories(st.session_state.user_id)
@@ -289,26 +289,26 @@ def main():
             if st.button("📚 Remember our last conversation"):
                 st.session_state.example_input = "Can you remember what we talked about before?"
                 st.rerun()
+
+def process_message(message: str):
+    """Process a message and update the chat history"""
+    with st.spinner("🤔 Thinking..."):
+        response_data = send_message(message, st.session_state.user_id)
         
-        # Handle example input
-        if hasattr(st.session_state, 'example_input'):
-            with st.spinner("🤔 Thinking..."):
-                response_data = send_message(st.session_state.example_input, st.session_state.user_id)
-                
-                if response_data:
-                    chat_entry = {
-                        'user_message': st.session_state.example_input,
-                        'assistant_response': response_data.get('response', 'No response'),
-                        'memories_used': response_data.get('memories_used', []),
-                        'memory_decision': response_data.get('memory_retrieval_decision', ''),
-                        'model_info': response_data.get('model_info', {}),
-                        'timestamp': datetime.now().isoformat()
-                    }
-                    
-                    st.session_state.chat_history.append(chat_entry)
-                    st.session_state.conversation_count += 1
-                    delattr(st.session_state, 'example_input')
-                    st.rerun()
+        if response_data:
+            # Add to chat history
+            chat_entry = {
+                'user_message': message,
+                'assistant_response': response_data.get('response', 'No response'),
+                'memories_used': response_data.get('memories_used', []),
+                'memory_decision': response_data.get('memory_retrieval_decision', ''),
+                'model_info': response_data.get('model_info', {}),
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            st.session_state.chat_history.append(chat_entry)
+            st.session_state.conversation_count += 1
+            st.rerun()
 
 if __name__ == "__main__":
     main()
