@@ -196,6 +196,6 @@ cython_debug/
 config.yaml
 
 __pycache__
-*.pyc
-*.sqlite3
+.pyc
+.sqlite3
 chroma_db/
