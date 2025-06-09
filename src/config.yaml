@@ -1,33 +1,153 @@
 google_api_key: AIzaSyDi6MyC0kNc4l6L3D5_2O2ktmGp5SJwCio
 huggingface_api_key: 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
+openai_api_key: ""
+anthropic_api_key: ""
 
+models:
+  embedding:
+    primary: "all-MiniLM-L6-v2"
+    fallback_models:
+      - "paraphrase-MiniLM-L6-v2"
+      - "all-mpnet-base-v2"
+      - "sentence-transformers/all-MiniLM-L6-v2"
+      - "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+      - "sentence-transformers/distilbert-base-nli-mean-tokens"
+      - "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+      - "sentence-transformers/msmarco-distilbert-base-tas-b"
+      - "sentence-transformers/all-distilroberta-v1"
+      - "intfloat/e5-small-v2"
+      - "intfloat/multilingual-e5-small"
+  
+  language:
+    primary: "gemini-1.5-flash"
+    alternatives:
+      - "gemini-1.5-pro"
+      - "gpt-3.5-turbo"
+      - "gpt-4"
+      - "claude-3-sonnet"
 
+database:
+  chromadb:
+    persist_directory: "./chroma_db"
+    collection_name: "chat_memories"
+    distance_function: "cosine"
+    backup_directory: "./chroma_backup"
+  
+  sqlite:
+    database_path: "./chat_data.db"
+    enable_backup: true
+    backup_interval: 3600
 
-# Embedding Model Configuration
-embedding:
-  model_name: "all-MiniLM-L6-v2"  # Default embedding model
-  fallback_models:
-    - "paraphrase-MiniLM-L6-v2"
-    - "all-mpnet-base-v2"
-
-# ChromaDB Configuration
-chromadb:
-  persist_directory: "./chroma_db"
-  collection_name: "chat_memories"
-
-# API Configuration
 api:
   host: "0.0.0.0"
   port: 8000
   cors_origins:
-    - "*"  # In production, specify your frontend domain
+    - "*"
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 60
+    burst_size: 10
+  
+  authentication:
+    enabled: false
+    secret_key: "your-secret-key-here"
+    token_expiry: 86400
 
-# Memory Configuration
 memory:
-  max_memories_per_query: 3
-  memory_relevance_threshold: 0.7
+  max_memories_per_query: 5
+  memory_relevance_threshold: 0.75
+  max_total_memories: 10000
+  cleanup_interval: 86400
+  enable_memory_compression: true
+  
+  recent_messages:
+    max_display: 10
+    include_in_context: true
+    
+  session_management:
+    session_timeout: 1800
+    max_sessions_per_user: 5
 
-# Logging Configuration
+ui:
+  frontend:
+    host: "0.0.0.0"
+    port: 7860
+    theme: "default"
+    enable_dark_mode: true
+    max_message_length: 4000
+    
+  features:
+    image_upload: true
+    file_upload: true
+    voice_input: false
+    export_chat: true
+    search_history: true
+    
+  image_processing:
+    max_file_size: 10485760
+    allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"]
+    resize_images: true
+    max_dimensions: [1024, 1024]
+
+performance:
+  caching:
+    enabled: true
+    cache_size: 1000
+    cache_ttl: 3600
+    
+  optimization:
+    batch_processing: true
+    async_operations: true
+    connection_pooling: true
+    
+  monitoring:
+    enable_metrics: true
+    log_performance: true
+    alert_thresholds:
+      response_time: 5.0
+      memory_usage: 80
+      error_rate: 0.05
+
+security:
+  input_validation:
+    max_input_length: 10000
+    sanitize_html: true
+    rate_limiting: true
+    
+  content_filtering:
+    enabled: true
+    blocked_words: []
+    toxicity_threshold: 0.8
+    
+  privacy:
+    anonymize_logs: true
+    data_retention_days: 30
+    encrypt_storage: false
+
 logging:
   level: "INFO"
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_logging: true
+  log_directory: "./logs"
+  max_log_size: 10485760
+  backup_count: 5
+  
+  components:
+    api: "INFO"
+    memory: "INFO"
+    embedding: "WARNING"
+    database: "INFO"
+
+development:
+  debug_mode: false
+  auto_reload: true
+  profiling: false
+  test_mode: false
+  
+health_check:
+  enabled: true
+  interval: 60
+  endpoints:
+    - "/health"
+    - "/status"
+    - "/metrics"
