@@ -107,6 +107,10 @@ from utilities import (
     AdvancedMemoryStore, EnhancedGeminiClient, ConfigManager, 
     DatabaseManager, ImageProcessor, CacheManager, PerformanceMonitor
 )
+from logs.custom_logger import CustomLoggerTracker
+
+logging = CustomLoggerTracker()
+logger = logging.get_logger(__name__)
 
 app = FastAPI(
     title="Advanced Chatbot Memory API", 

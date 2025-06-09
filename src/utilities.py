@@ -18,9 +18,10 @@ import logging
 from functools import lru_cache
 import time
 import uuid
+from logs.custom_logger import CustomLoggerTracker
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logging = CustomLoggerTracker()
+logger = logging.get_logger(__name__)
 
 class DatabaseManager:
     def __init__(self, db_path: str = "./chat_data.db"):

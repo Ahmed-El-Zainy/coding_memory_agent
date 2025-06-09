@@ -81,6 +81,10 @@ import signal
 import yaml
 from multiprocessing import Process
 from pathlib import Path
+from logs.custom_logger import CustomLoggerTracker
+
+logging = CustomLoggerTracker()
+logger = logging.get_logger(__name__)
 
 def load_config():
     config_path = Path("src/config.yaml")

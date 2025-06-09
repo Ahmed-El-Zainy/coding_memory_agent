@@ -9,9 +9,16 @@ from datetime import datetime
 import yaml
 from pathlib import Path
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# # Configure logging
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger(__name__)
+
+from logs.custom_logger import CustomLoggerTracker
+
+logging = CustomLoggerTracker()
+logger = logging.get_logger(__name__)
+
+
 
 class GradioInterface:
     def __init__(self, backend_url: str):
