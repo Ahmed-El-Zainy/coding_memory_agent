@@ -198,4 +198,6 @@ config.yaml
 __pycache__
 .pyc
 .sqlite3
+
+# ChromaDB
 chroma_db/
