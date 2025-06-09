@@ -201,3 +201,10 @@ __pycache__
 
 # ChromaDB
 chroma_db/
+
+src/__pycache__
+
+
+assets/chroma_backup/
+assets/logs/
+assets/uploads/
