@@ -18,6 +18,15 @@ import logging
 from functools import lru_cache
 import time
 import uuid
+
+import os 
+import sys
+
+
+# fmt: off
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.dirname(SCRIPT_DIR)
+sys.path.append(PARENT_DIR)
 from logs.custom_logger import CustomLoggerTracker
 
 logging = CustomLoggerTracker()
