@@ -81,6 +81,11 @@ import signal
 import yaml
 from multiprocessing import Process
 from pathlib import Path
+
+# fmt: off
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.dirname(SCRIPT_DIR)
+sys.path.append(PARENT_DIR)
 from logs.custom_logger import CustomLoggerTracker
 
 logging = CustomLoggerTracker()
