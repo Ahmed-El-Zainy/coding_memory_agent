@@ -208,3 +208,6 @@ src/__pycache__
 assets/chroma_backup/
 assets/logs/
 assets/uploads/
+.gradio/
+*.db
+.DS_Store
